@@ -1,3 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=BBH+Bartle&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+
+/* TEMPORARY STYLES FOR PYEXPO DEFAULT TITLE */
+
+.py , .expo {
+  font-size: clamp(1rem, 2.5vw, 2rem);
+    font-weight: 300;
+    opacity: 0.8;
+}
+
+.py {
+    color: #d3af37;
+}
+
+.expo {
+    color: #010b3e;
+}
+
+/* END OF TEMPORARY STYLES */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    120deg,
+    #c56ad6 0%,
+    #c56ad6 40%,
+    #e8bdf4 50%,
+    #c56ad6 60%,
+    #c56ad6 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 8s ease-in-out infinite;
+  display: block;
+  width: max-content;
+}
+
+.bbh-bartle-regular {
+  font-family: "BBH Bartle", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+.orbitron {
+  font-family: "Orbitron", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,14 +68,42 @@
 }
 
 body {
-    background-color: #000;
-    color: #fff;
+    background-color: #ffffff;
+    background-image: 
+        radial-gradient(circle at 15% 50%, #ebddff, transparent 50%),
+        radial-gradient(circle at 85% 30%, #ebddff, transparent 50%);
+    color: #1a1a1a;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    position: relative;
+}
+
+#bg-logo {
+    position: absolute;
+    bottom: -40%;
+    left: -10%;
+    width: 80vw;
+    min-width: 400px;
+    opacity: 0.07;
+    transform: rotate(30deg);
+    z-index: -1;
+    pointer-events: none;
+}
+
+#bg-logo-top {
+    position: absolute;
+    top: -40%;
+    right: -30%;
+    width: 60vw;
+    min-width: 400px;
+    opacity: 0.07;
+    transform: rotate(-40deg);
+    z-index: -1;
+    pointer-events: none;
 }
 
 #container {
@@ -23,6 +114,9 @@ body {
 
 header {
     margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #event-title {
@@ -30,6 +124,7 @@ header {
     text-transform: uppercase;
     letter-spacing: 0.2rem;
     margin-bottom: 0.5rem;
+    color: #c56ad6;
 }
 
 #event-subtitle {
@@ -39,10 +134,11 @@ header {
 }
 
 #timer-display {
-    font-size: clamp(5rem, 20vw, 30rem);
+    font-size: clamp(4rem, 18vw, 40rem);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 1;
+    white-space: nowrap;
 }
 
 @media (max-height: 500px) {

@@ -7,31 +7,40 @@
     <link rel="stylesheet" href="../styles.css">
     <style>
         body {
-            background-color: #111;
+            background-color: #ffffff;
+            background-image: 
+                radial-gradient(circle at 15% 50%, #ebddff, transparent 50%),
+                radial-gradient(circle at 85% 30%, #ebddff, transparent 50%);
             overflow: auto;
             justify-content: flex-start;
             align-items: flex-start;
             padding: 2rem;
-            color: #ddd;
+            color: #333;
         }
         .settings-card {
-            background: #222;
+            background: #ffffff;
             padding: 2rem;
             border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             max-width: 600px;
             margin: 0 auto;
             width: 100%;
         }
-        h1 { margin-bottom: 2rem; color: #fff; }
+        h1 { margin-bottom: 2rem; color: #1a1a1a; }
         .field { margin-bottom: 1.5rem; }
-        label { display: block; margin-bottom: 0.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
         input[type="text"], input[type="datetime-local"], input[type="number"], .duration-inputs input {
             width: 100%;
             padding: 0.8rem;
-            background: #333;
-            border: 1px solid #444;
-            color: #fff;
+            background: #fdfdfd;
+            border: 1px solid #ccc;
+            color: #1a1a1a;
             border-radius: 4px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 2px rgba(0,122,255,0.2);
         }
         .radio-group { display: flex; gap: 1rem; margin-top: 0.5rem; }
         .duration-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
