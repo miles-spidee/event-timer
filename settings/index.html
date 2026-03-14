@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Settings</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            background-color: #111;
+            overflow: auto;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 2rem;
+            color: #ddd;
+        }
+        .settings-card {
+            background: #222;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        h1 { margin-bottom: 2rem; color: #fff; }
+        .field { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input[type="text"], input[type="datetime-local"], input[type="number"], .duration-inputs input {
+            width: 100%;
+            padding: 0.8rem;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+        }
+        .radio-group { display: flex; gap: 1rem; margin-top: 0.5rem; }
+        .duration-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        .duration-inputs div { text-align: center; }
+        .duration-inputs label { font-size: 0.8rem; opacity: 0.7; }
+        .btn {
+            background: #007aff;
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn:hover { background: #0056b3; }
+        .back-link { display: block; margin-top: 1rem; color: #007aff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="settings-card">
+        <h1>Timer Settings</h1>
+        
+        <div class="field">
+            <label for="title">Event Title</label>
+            <input type="text" id="title" placeholder="e.g. New Year Countdown">
+        </div>
+        
+        <div class="field">
+            <label for="subtitle">Event Subtitle</label>
+            <input type="text" id="subtitle" placeholder="e.g. Seconds until 2026">
+        </div>
+
+        <div class="field">
+            <label>Mode</label>
+            <div class="radio-group">
+                <label><input type="radio" name="mode" value="end-time" checked> End Time</label>
+                <label><input type="radio" name="mode" value="fixed-time"> Fixed Duration</label>
+            </div>
+        </div>
+
+        <div id="end-time-field" class="field">
+            <label for="end-time">End Date & Time</label>
+            <input type="datetime-local" id="end-time">
+        </div>
+
+        <div id="fixed-time-field" class="field" style="display:none;">
+            <label>Duration</label>
+            <div class="duration-inputs">
+                <div>
+                    <label for="hours">Hrs</label>
+                    <input type="number" id="hours" min="0" placeholder="0">
+                </div>
+                <div>
+                    <label for="minutes">Min</label>
+                    <input type="number" id="minutes" min="0" max="59" placeholder="0">
+                </div>
+                <div>
+                    <label for="seconds">Sec</label>
+                    <input type="number" id="seconds" min="0" max="59" placeholder="0">
+                </div>
+            </div>
+        </div>
+
+        <button class="btn" id="save-btn">Save Settings</button>
+        <a href="../" class="back-link">← Back to Timer</a>
+    </div>
+    <script src="settings.js"></script>
+</body>
+</html>
