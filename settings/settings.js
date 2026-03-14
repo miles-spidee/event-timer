@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endTimeField = document.getElementById('end-time-field');
     const fixedTimeField = document.getElementById('fixed-time-field');
     const saveBtn = document.getElementById('save-btn');
+    const resetBtn = document.getElementById('reset-btn');
 
     // Load existing settings
     const settings = JSON.parse(localStorage.getItem('timerSettings') || '{}');
@@ -52,4 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Settings saved:', newSettings);
         alert('Settings saved! The timer will update automatically.');
     });
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            localStorage.removeItem('timerState');
+            alert('Timer has been reset! It will wait for the Spacebar to start again.');
+        });
+    }
 });

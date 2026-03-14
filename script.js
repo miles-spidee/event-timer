@@ -1,4 +1,5 @@
 let settings = {};
+let timerState = {};
 let lastSettingsJson = '';
 let timerInterval = null;
 let isRunning = false;
@@ -65,18 +66,21 @@ function startFixedTimer() {
 }
 
 function loadSettings() {
-    const stored = localStorage.getItem('timerSettings');
-    if (stored !== lastSettingsJson) {
-        lastSettingsJson = stored || '{}';
-        if (stored) {
-            try {
-                settings = JSON.parse(stored);
-            } catch (e) {
-                console.error('Failed to parse settings:', e);
-                settings = {};
-            }
-        } else {
+    const storedSettings = localStorage.getItem('timerSettings') || '{}';
+    const storedState = localStorage.getItem('timerState') || '{}';
+    const combined = storedSettings + '|' + storedState;
+
+    if (combined !== lastSettingsJson) {
+        lastSettingsJson = combined;
+        try {
+            settings = JSON.parse(storedSettings);
+        } catch (e) {
             settings = {};
+        }
+        try {
+            timerState = JSON.parse(storedState);
+        } catch (e) {
+            timerState = {};
         }
         applySettings();
     }
@@ -95,14 +99,26 @@ function applySettings() {
     if (settings.mode === 'end-time' && settings.endTime) {
         endTime = new Date(settings.endTime).getTime();
         if (!isNaN(endTime)) {
-            startEndTimeTimer();
+            if (timerState.started) {
+                startEndTimeTimer();
+            } else {
+                // Show initially without starting
+                const dist = Math.floor((endTime - new Date().getTime()) / 1000);
+                updateDisplay(dist);
+            }
         } else {
             updateDisplay(0);
         }
     } else {
         // Fixed-time or default mode
-        remainingTime = parseInt(settings.duration) || 0;
-        updateDisplay(remainingTime);
+        if (timerState.started && timerState.fixedEndTime) {
+            remainingTime = Math.floor((timerState.fixedEndTime - new Date().getTime()) / 1000);
+            if (remainingTime < 0) remainingTime = 0;
+            startFixedTimer();
+        } else {
+            remainingTime = parseInt(settings.duration) || 0;
+            updateDisplay(remainingTime);
+        }
     }
 }
 
@@ -123,8 +139,40 @@ document.addEventListener('DOMContentLoaded', init);
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         e.preventDefault();
-        if ((settings.mode === 'fixed-time' || !settings.mode) && !isRunning) {
-            startFixedTimer();
+        
+        if (!timerState.started) {
+            timerState.started = true;
+            
+            if (settings.mode === 'end-time') {
+                localStorage.setItem('timerState', JSON.stringify(timerState));
+                startEndTimeTimer();
+            } else {
+                remainingTime = parseInt(settings.duration) || 0;
+                timerState.fixedEndTime = new Date().getTime() + (remainingTime * 1000);
+                localStorage.setItem('timerState', JSON.stringify(timerState));
+                startFixedTimer();
+            }
+
+            // Confetti Celebration
+            const duration = 2 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+              const timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              const particleCount = 50 * (timeLeft / duration);
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
         }
     }
 });
