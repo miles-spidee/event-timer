@@ -57,10 +57,33 @@
         }
         .btn:hover { background: #0056b3; }
         .back-link { display: block; margin-top: 1rem; color: #007aff; text-decoration: none; }
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        #login-overlay .settings-card {
+            max-width: 400px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div class="settings-card">
+    <div id="login-overlay">
+        <div class="settings-card">
+            <h2>Admin Login</h2>
+            <br>
+            <div class="field">
+                <input type="password" id="auth-password" placeholder="Enter Password">
+            </div>
+            <button class="btn" id="login-btn" style="width: 100%;">Login</button>
+            <a href="../" class="back-link">← Back to Event</a>
+        </div>
+    </div>
+    <div class="settings-card" id="main-settings" style="display: none;">
         <h1>Timer Settings</h1>
         
         <div class="field">

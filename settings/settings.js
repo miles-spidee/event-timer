@@ -8,7 +8,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
     const resetBtn = document.getElementById('reset-btn');
 
+    // --- Authentication ---
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginBtn = document.getElementById('login-btn');
+    const authPasswordField = document.getElementById('auth-password');
+    const mainSettings = document.getElementById('main-settings');
+
+    if (sessionStorage.getItem('timerAdminAuth') === 'true') {
+        loginOverlay.style.display = 'none';
+        mainSettings.style.display = 'block';
+    }
+
+    loginBtn.addEventListener('click', () => {
+        if (authPasswordField.value === '2026') {
+            sessionStorage.setItem('timerAdminAuth', 'true');
+            loginOverlay.style.display = 'none';
+            mainSettings.style.display = 'block';
+        } else {
+            alert('Incorrect password!');
+            authPasswordField.value = '';
+        }
+    });
+    // Allow enter key
+    authPasswordField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginBtn.click();
+    });
+
     let currentSettings = {};
+    let currentState = {};
 
     // Load existing settings globally instead of just from localStorage
     const timerRef = doc(db, "timers", TIMER_DOC_ID);
@@ -16,7 +43,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (snapshot.exists()) {
             const data = snapshot.data();
             const settings = data.settings || {};
+            currentState = data.state || {};
             currentSettings = settings;
+
+            // Update Start/Pause button UI based on current state
+            if (currentState.started) {
+                if (startBtn) {
+                    startBtn.textContent = 'Pause Timer';
+                    startBtn.style.background = '#ffc107'; // Yellow for pause
+                    startBtn.style.color = '#000';
+                }
+            } else {
+                if (startBtn) {
+                    startBtn.textContent = 'Start Timer';
+                    startBtn.style.background = '#28a745'; // Green for start
+                    startBtn.style.color = '#fff';
+                }
+            }
 
             if (settings.title) document.getElementById('title').value = settings.title;
             if (settings.subtitle) document.getElementById('subtitle').value = settings.subtitle;
@@ -81,23 +124,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (startBtn) {
         startBtn.addEventListener('click', () => {
             const mode = document.querySelector('input[name="mode"]:checked').value;
-            let updatePayload = {
-                "state.started": true,
-                "state.updatedAt": Date.now()
-            };
+            
+            if (currentState.started) {
+                // IT IS RUNNING -> WE NEED TO PAUSE IT
+                let updatePayload = {
+                    "state.started": false,
+                    "state.updatedAt": Date.now()
+                };
 
-            if (mode === 'fixed-time') {
-                const hrs = parseInt(document.getElementById('hours').value) || 0;
-                const min = parseInt(document.getElementById('minutes').value) || 0;
-                const sec = parseInt(document.getElementById('seconds').value) || 0;
-                const remainingTime = (hrs * 3600) + (min * 60) + sec;
-                const newFixedEndTime = new Date().getTime() + (remainingTime * 1000);
-                updatePayload["state.fixedEndTime"] = newFixedEndTime;
+                // If fixed time, we must save the remaining progress so it resumes properly
+                if (mode === 'fixed-time' && currentState.fixedEndTime) {
+                    let remaining = Math.floor((currentState.fixedEndTime - Date.now()) / 1000);
+                    if (remaining < 0) remaining = 0;
+                    // Update settings duration so it starts from this remaining time next
+                    updatePayload["settings.duration"] = remaining;
+                }
+
+                updateDoc(doc(db, "timers", TIMER_DOC_ID), updatePayload).then(() => {
+                    console.log('Timer paused globally!');
+                }).catch(console.error);
+
+            } else {
+                // IT IS STOPPED -> WE NEED TO START IT
+                let updatePayload = {
+                    "state.started": true,
+                    "state.updatedAt": Date.now()
+                };
+
+                if (mode === 'fixed-time') {
+                    const hrs = parseInt(document.getElementById('hours').value) || 0;
+                    const min = parseInt(document.getElementById('minutes').value) || 0;
+                    const sec = parseInt(document.getElementById('seconds').value) || 0;
+                    const remainingTime = (hrs * 3600) + (min * 60) + sec;
+                    const newFixedEndTime = new Date().getTime() + (remainingTime * 1000);
+                    updatePayload["state.fixedEndTime"] = newFixedEndTime;
+                }
+
+                updateDoc(doc(db, "timers", TIMER_DOC_ID), updatePayload).then(() => {
+                    console.log('Timer started globally!');
+                }).catch(console.error);
             }
-
-            updateDoc(doc(db, "timers", TIMER_DOC_ID), updatePayload).then(() => {
-                alert('Timer started globally!');
-            }).catch(console.error);
         });
     }
 
