@@ -30,21 +30,19 @@
 
 .shimmer-text {
   background: linear-gradient(
-    120deg,
-    #c56ad6 0%,
-    #c56ad6 40%,
-    #e8bdf4 50%,
-    #c56ad6 60%,
-    #c56ad6 100%
+    to right,
+    #9c4bd1 20%,
+    #e8bcf0 50%,
+    #9c4bd1 80%
   );
   background-size: 200% auto;
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmer 8s ease-in-out infinite;
-  display: block;
-  width: max-content;
+  animation: shimmer 4s linear infinite;
+  display: inline-block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .bbh-bartle-regular {
@@ -131,11 +129,11 @@ header {
 }
 
 #event-title {
-    font-size: clamp(2rem, 5vw, 4rem);
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 800; /* Made bolder to match elevated structure */
     text-transform: uppercase;
-    letter-spacing: 0.2rem;
+    letter-spacing: 0.1rem;
     margin-bottom: 0.5rem;
-    color: #c56ad6;
 }
 
 #event-subtitle {
