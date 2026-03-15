@@ -145,7 +145,7 @@ header {
 }
 
 #timer-display {
-    font-size: clamp(4rem, 18vw, 40rem);
+    font-size: clamp(3rem, 15vw, 25rem); /* Slightly reduced size */
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 1;

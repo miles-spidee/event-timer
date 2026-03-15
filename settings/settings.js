@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endTimeField = document.getElementById('end-time-field');
     const fixedTimeField = document.getElementById('fixed-time-field');
     const saveBtn = document.getElementById('save-btn');
+    const startBtn = document.getElementById('start-btn');
     const resetBtn = document.getElementById('reset-btn');
 
     let currentSettings = {};
@@ -76,6 +77,29 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Error updating. See console.');
         });
     });
+
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            let updatePayload = {
+                "state.started": true,
+                "state.updatedAt": Date.now()
+            };
+
+            if (mode === 'fixed-time') {
+                const hrs = parseInt(document.getElementById('hours').value) || 0;
+                const min = parseInt(document.getElementById('minutes').value) || 0;
+                const sec = parseInt(document.getElementById('seconds').value) || 0;
+                const remainingTime = (hrs * 3600) + (min * 60) + sec;
+                const newFixedEndTime = new Date().getTime() + (remainingTime * 1000);
+                updatePayload["state.fixedEndTime"] = newFixedEndTime;
+            }
+
+            updateDoc(doc(db, "timers", TIMER_DOC_ID), updatePayload).then(() => {
+                alert('Timer started globally!');
+            }).catch(console.error);
+        });
+    }
 
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
