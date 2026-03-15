@@ -185,6 +185,10 @@ header {
     font-size: clamp(1.5rem, 3vw, 2.5rem) !important;
 }
 
+.blink-alert {
+    animation: blinkInstruction 1.5s infinite;
+}
+
 #start-instruction {
     font-size: clamp(1.5rem, 3vw, 4rem);
     color: #e8a5f2; /* A lighter subtle blush color derived from the main theme */

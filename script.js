@@ -535,19 +535,17 @@ function handleTimerComplete() {
     clearTimeout(quoteTimeout);
     clearTimeout(quoteHideTimeout);
     
-    // Trigger same styling as the alert mode
-    quoteContainer.className = 'bbh-bartle-regular alert-mode';
+    // Trigger same styling as the alert mode and add blinking
+    quoteContainer.className = 'bbh-bartle-regular alert-mode blink-alert';
     // Clear out any JS-injected inline styles from quotes
     quoteContainer.style.fontSize = ''; 
     quoteContainer.style.color = '';
     quoteContainer.style.fontWeight = '';
     
-    quoteContainer.textContent = "The Time Has Come!";
+    quoteContainer.textContent = "The Time Has Come!!!";
     quoteContainer.style.opacity = 1;
     
-    // 3. Trigger a massive continuous firework show!
-    const duration = 15 * 1000;
-    const animationEnd = Date.now() + duration;
+    // 3. Trigger an endless continuous firework show!
     let skew = 1;
     
     function randomInRange(min, max) {
@@ -555,14 +553,12 @@ function handleTimerComplete() {
     }
     
     (function frame() {
-      const timeLeft = animationEnd - Date.now();
-      const ticks = Math.max(200, 500 * (timeLeft / duration));
       skew = Math.max(0.8, skew - 0.001);
     
       confetti({
         particleCount: 1,
         startVelocity: 0,
-        ticks: ticks,
+        ticks: 200,
         origin: {
           x: Math.random(),
           y: (Math.random() * skew) - 0.2
@@ -574,9 +570,8 @@ function handleTimerComplete() {
         drift: randomInRange(-0.4, 0.4)
       });
     
-      if (timeLeft > 0) {
-        requestAnimationFrame(frame);
-      }
+      // Keep going forever!
+      requestAnimationFrame(frame);
     }());
 }
 
