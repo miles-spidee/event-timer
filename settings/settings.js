@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (settings.title) document.getElementById('title').value = settings.title;
             if (settings.subtitle) document.getElementById('subtitle').value = settings.subtitle;
+            if (settings.alertMessage !== undefined) document.getElementById('alert-message').value = settings.alertMessage;
             if (settings.mode) {
                 document.querySelector(`input[name="mode"][value="${settings.mode}"]`).checked = true;
                 toggleFields(settings.mode);
@@ -53,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.addEventListener('click', () => {
         const title = document.getElementById('title').value;
         const subtitle = document.getElementById('subtitle').value;
+        const alertMessage = document.getElementById('alert-message').value;
         const mode = document.querySelector('input[name="mode"]:checked').value;
         const endTime = document.getElementById('end-time').value;
         
@@ -61,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sec = parseInt(document.getElementById('seconds').value) || 0;
         const duration = (hrs * 3600) + (min * 60) + sec;
 
-        const newSettings = { title, subtitle, mode, endTime, duration };
+        const newSettings = { title, subtitle, mode, endTime, duration, alertMessage };
 
         // Save straight to Firebase
         updateDoc(doc(db, "timers", TIMER_DOC_ID), {

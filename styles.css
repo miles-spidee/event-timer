@@ -150,13 +150,25 @@ header {
     font-variant-numeric: tabular-nums;
     line-height: 1;
     white-space: nowrap;
+    transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+}
+
+#timer-display.danger {
+    color: #ff1a1a;
+    text-shadow: 0 0 10px rgba(255, 26, 26, 0.4);
+    animation: dangerPulse 1s infinite alternate;
+}
+
+@keyframes dangerPulse {
+    from { text-shadow: 0 0 5px rgba(255, 26, 26, 0.2); }
+    to { text-shadow: 0 0 15px rgba(255, 26, 26, 0.6), 0 0 25px rgba(255, 26, 26, 0.3); }
 }
 
 #quote-container {
     margin-top: 2rem;
     font-size: clamp(1rem, 2vw, 1.5rem);
     font-style: italic;
-    color: #1a1a1a;
+    color: #000000;
     opacity: 0;
     transition: opacity 1.5s ease;
     text-align: center;
@@ -164,6 +176,13 @@ header {
     margin-left: auto;
     margin-right: auto;
     min-height: 3rem;
+}
+
+#quote-container.alert-mode {
+    color: #cc0000; /* Deep red for alerts */
+    font-style: normal;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3vw, 2.5rem) !important;
 }
 
 #start-instruction {

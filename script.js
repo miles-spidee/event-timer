@@ -338,6 +338,13 @@ function formatTime(seconds) {
 
 function updateDisplay(seconds) {
     timerDisplay.textContent = formatTime(seconds);
+    
+    // Add pulsing deep red color for the last 59 seconds
+    if (timerState.started && seconds > 0 && seconds <= 59) {
+        timerDisplay.classList.add('danger');
+    } else {
+        timerDisplay.classList.remove('danger');
+    }
 }
 
 function stopTimer() {
@@ -356,9 +363,9 @@ function startEndTimeTimer() {
     timerInterval = setInterval(() => {
         const now = new Date().getTime();
         const distance = Math.floor((endTime - now) / 1000);
-        if (distance < 0) {
+        if (distance <= 0) {
             stopTimer();
-            updateDisplay(0);
+            handleTimerComplete();
             return;
         }
         updateDisplay(distance);
@@ -373,7 +380,7 @@ function startFixedTimer() {
         remainingTime--;
         if (remainingTime <= 0) {
             stopTimer();
-            updateDisplay(0);
+            handleTimerComplete();
             return;
         }
         updateDisplay(remainingTime);
@@ -453,7 +460,30 @@ function applySettings() {
 
 function handleQuoteRotation() {
     clearTimeout(quoteTimeout);
+
+    // 1. Is there a Global Alert Message?
+    if (settings.alertMessage && settings.alertMessage.trim() !== '') {
+        clearTimeout(quoteHideTimeout); // Stop fading if any
+        quoteContainer.className = 'bbh-bartle-regular alert-mode';
+        // Reset any inline styles that might interfere
+        quoteContainer.style.fontSize = ''; 
+        quoteContainer.style.color = '';
+        quoteContainer.style.fontWeight = '';
+        
+        quoteContainer.textContent = settings.alertMessage;
+        quoteContainer.style.opacity = 1;
+        return; // Halt rotation loop entirely until cleared
+    }
+
+    // 2. If just transitioning away from an alert, hide it before continuing quotes
+    if (quoteContainer.style.opacity == 1 && !techQuotes.includes(quoteContainer.textContent)) {
+        quoteContainer.style.opacity = 0;
+        // Proceed to schedule next quote to give visual time to fade
+    }
     
+    // Switch class back to normal quote styling
+    quoteContainer.className = 'bbh-bartle-regular';
+
     // Only show quotes if the timer has started
     if (!timerState.started) {
         quoteTimeout = setTimeout(handleQuoteRotation, 2000);
@@ -475,6 +505,17 @@ function handleQuoteRotation() {
         if (!techQuotes || techQuotes.length === 0) return;
         
         const randomQuote = techQuotes[Math.floor(Math.random() * techQuotes.length)];
+        
+        // Dynamically reduce font size if the quote is very long
+        if (randomQuote.length > 100) {
+            quoteContainer.style.fontSize = "clamp(0.8rem, 1.5vw, 1.1rem)";
+        } else if (randomQuote.length > 60) {
+            quoteContainer.style.fontSize = "clamp(0.9rem, 1.8vw, 1.3rem)";
+        } else {
+            // Keep original sizing for short quotes or reset to empty so CSS clamp takes over
+            quoteContainer.style.fontSize = ""; 
+        }
+
         quoteContainer.textContent = randomQuote;
         quoteContainer.style.opacity = 1;
         
@@ -484,6 +525,59 @@ function handleQuoteRotation() {
             quoteContainer.style.opacity = 0;
         }, 60000);
     }
+}
+
+function handleTimerComplete() {
+    // 1. Visually reset to standard 00:00:00
+    updateDisplay(0);
+    
+    // 2. Hide quotes and show final message instead
+    clearTimeout(quoteTimeout);
+    clearTimeout(quoteHideTimeout);
+    
+    // Trigger same styling as the alert mode
+    quoteContainer.className = 'bbh-bartle-regular alert-mode';
+    // Clear out any JS-injected inline styles from quotes
+    quoteContainer.style.fontSize = ''; 
+    quoteContainer.style.color = '';
+    quoteContainer.style.fontWeight = '';
+    
+    quoteContainer.textContent = "The Time Has Come!";
+    quoteContainer.style.opacity = 1;
+    
+    // 3. Trigger a massive continuous firework show!
+    const duration = 15 * 1000;
+    const animationEnd = Date.now() + duration;
+    let skew = 1;
+    
+    function randomInRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+    
+    (function frame() {
+      const timeLeft = animationEnd - Date.now();
+      const ticks = Math.max(200, 500 * (timeLeft / duration));
+      skew = Math.max(0.8, skew - 0.001);
+    
+      confetti({
+        particleCount: 1,
+        startVelocity: 0,
+        ticks: ticks,
+        origin: {
+          x: Math.random(),
+          y: (Math.random() * skew) - 0.2
+        },
+        colors: ['#c56ad6', '#ff3366', '#ffffff'],
+        shapes: ['circle'],
+        gravity: randomInRange(0.4, 0.6),
+        scalar: randomInRange(0.4, 1),
+        drift: randomInRange(-0.4, 0.4)
+      });
+    
+      if (timeLeft > 0) {
+        requestAnimationFrame(frame);
+      }
+    }());
 }
 
 function init() {
