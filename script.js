@@ -1,3 +1,5 @@
+import { db, doc, onSnapshot, updateDoc, setDoc, TIMER_DOC_ID } from './firebase-config.js';
+
 let settings = {};
 let timerState = {};
 let lastSettingsJson = '';
@@ -379,24 +381,27 @@ function startFixedTimer() {
 }
 
 function loadSettings() {
-    const storedSettings = localStorage.getItem('timerSettings') || '{}';
-    const storedState = localStorage.getItem('timerState') || '{}';
-    const combined = storedSettings + '|' + storedState;
+    // Left empty for compatibility where initially called. 
+    // Replaced by real-time listener.
+}
 
-    if (combined !== lastSettingsJson) {
-        lastSettingsJson = combined;
-        try {
-            settings = JSON.parse(storedSettings);
-        } catch (e) {
-            settings = {};
+// Setup real-time listener for Firestore
+function setupFirestoreListener() {
+    const timerRef = doc(db, "timers", TIMER_DOC_ID);
+    onSnapshot(timerRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.data();
+            settings = data.settings || {};
+            timerState = data.state || {};
+            applySettings();
+        } else {
+            // First time setup if the document doesn't exist
+            setDoc(timerRef, {
+                settings: {},
+                state: { started: false }
+            }).catch(console.error);
         }
-        try {
-            timerState = JSON.parse(storedState);
-        } catch (e) {
-            timerState = {};
-        }
-        applySettings();
-    }
+    });
 }
 
 function applySettings() {
@@ -510,13 +515,21 @@ window.addEventListener('keydown', (e) => {
             timerState.started = true;
             
             if (settings.mode === 'end-time') {
-                localStorage.setItem('timerState', JSON.stringify(timerState));
-                startEndTimeTimer();
+                // startEndTimeTimer will be called triggered by Firestore state sync
+                updateDoc(doc(db, "timers", TIMER_DOC_ID), {
+                    "state.started": true,
+                    "state.updatedAt": Date.now()
+                }).catch(console.error);
             } else {
                 remainingTime = parseInt(settings.duration) || 0;
-                timerState.fixedEndTime = new Date().getTime() + (remainingTime * 1000);
-                localStorage.setItem('timerState', JSON.stringify(timerState));
-                startFixedTimer();
+                const newFixedEndTime = new Date().getTime() + (remainingTime * 1000);
+                timerState.fixedEndTime = newFixedEndTime;
+                
+                updateDoc(doc(db, "timers", TIMER_DOC_ID), {
+                    "state.started": true,
+                    "state.fixedEndTime": newFixedEndTime,
+                    "state.updatedAt": Date.now()
+                }).catch(console.error);
             }
 
             // Confetti Celebration
@@ -543,14 +556,4 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Poll for changes every 300ms
-setInterval(() => {
-    loadSettings();
-}, 300);
-
-// Listen for storage changes (cross-tab)
-window.addEventListener('storage', (e) => {
-    if (e.key === 'timerSettings') {
-        loadSettings();
-    }
-});
+setupFirestoreListener();

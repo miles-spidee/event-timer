@@ -1,3 +1,5 @@
+import { db, doc, onSnapshot, updateDoc, setDoc, TIMER_DOC_ID } from '../firebase-config.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     const modeRadios = document.getElementsByName('mode');
     const endTimeField = document.getElementById('end-time-field');
@@ -5,21 +7,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('save-btn');
     const resetBtn = document.getElementById('reset-btn');
 
-    // Load existing settings
-    const settings = JSON.parse(localStorage.getItem('timerSettings') || '{}');
-    if (settings.title) document.getElementById('title').value = settings.title;
-    if (settings.subtitle) document.getElementById('subtitle').value = settings.subtitle;
-    if (settings.mode) {
-        document.querySelector(`input[name="mode"][value="${settings.mode}"]`).checked = true;
-        toggleFields(settings.mode);
-    }
-    if (settings.endTime) document.getElementById('end-time').value = settings.endTime;
-    if (settings.duration) {
-        const totalSec = parseInt(settings.duration);
-        document.getElementById('hours').value = Math.floor(totalSec / 3600);
-        document.getElementById('minutes').value = Math.floor((totalSec % 3600) / 60);
-        document.getElementById('seconds').value = totalSec % 60;
-    }
+    let currentSettings = {};
+
+    // Load existing settings globally instead of just from localStorage
+    const timerRef = doc(db, "timers", TIMER_DOC_ID);
+    onSnapshot(timerRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const data = snapshot.data();
+            const settings = data.settings || {};
+            currentSettings = settings;
+
+            if (settings.title) document.getElementById('title').value = settings.title;
+            if (settings.subtitle) document.getElementById('subtitle').value = settings.subtitle;
+            if (settings.mode) {
+                document.querySelector(`input[name="mode"][value="${settings.mode}"]`).checked = true;
+                toggleFields(settings.mode);
+            }
+            if (settings.endTime) document.getElementById('end-time').value = settings.endTime;
+            if (settings.duration) {
+                const totalSec = parseInt(settings.duration);
+                document.getElementById('hours').value = Math.floor(totalSec / 3600);
+                document.getElementById('minutes').value = Math.floor((totalSec % 3600) / 60);
+                document.getElementById('seconds').value = totalSec % 60;
+            }
+        } else {
+            // Need to initialize document first time
+            setDoc(timerRef, { settings: {}, state: { started: false } }).catch(console.error);
+        }
+    });
 
     modeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => toggleFields(e.target.value));
@@ -47,17 +62,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const duration = (hrs * 3600) + (min * 60) + sec;
 
         const newSettings = { title, subtitle, mode, endTime, duration };
-        
-        localStorage.setItem('timerSettings', JSON.stringify(newSettings));
-        
-        console.log('Settings saved:', newSettings);
-        alert('Settings saved! The timer will update automatically.');
+
+        // Save straight to Firebase
+        updateDoc(doc(db, "timers", TIMER_DOC_ID), {
+            settings: newSettings
+        }).then(() => {
+            console.log('Settings saved to Firebase:', newSettings);
+            alert('Settings saved! Distributed globally.');
+        }).catch(err => {
+            console.error("Error saving to Firebase:", err);
+            alert('Error updating. See console.');
+        });
     });
 
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            localStorage.removeItem('timerState');
-            alert('Timer has been reset! It will wait for the Spacebar to start again.');
+            updateDoc(doc(db, "timers", TIMER_DOC_ID), {
+                "state.started": false,
+                "state.updatedAt": Date.now()
+            }).then(() => {
+                alert('Timer reset! The global timer will wait for the Spacebar to start again.');
+            }).catch(console.error);
         });
     }
 });
